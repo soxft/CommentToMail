@@ -12,7 +12,7 @@ use \Typecho\Widget\Helper\Form\Element\{Password, Text, Radio, Checkbox};
  *
  * @package CommentToMail
  * @author  xcsoft
- * @version 5.0.0
+ * @version 1.2.1
  * @link https://xsot.cn
  * @LastEditDate 20220130
  */
@@ -66,7 +66,6 @@ class Plugin implements PluginInterface
 	public static function deactivate()
 	{
 		Helper::removeAction(self::$_action);
-		//Helper::removeRoute('commentToMailProcessQueue');
 		Helper::removePanel(1, self::$_panel);
 	}
 

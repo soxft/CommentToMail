@@ -45,13 +45,6 @@ class Action extends Widget implements \Widget\ActionInterface
     private string $_prefix;
 
     /** 
-     * 插件目录 
-     *
-     *  @var string  
-     */
-    private string $_dir = __DIR__;
-
-    /** 
      * 插件配置信息 
      * 
      * @var \Typecho\Config
