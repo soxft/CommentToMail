@@ -156,7 +156,9 @@ class Action extends Widget implements \Widget\ActionInterface
         //计数器
         $success = 0;
         foreach ($mailQueue as &$mail) {
-
+            /**
+             * @var \TypechoPlugin\CommentToMail\lib\Comment
+             */
             $mailInfo = unserialize(base64_decode($mail['content']));
 
             /** 发送邮件 */
@@ -194,6 +196,8 @@ class Action extends Widget implements \Widget\ActionInterface
     {
 
         $this->_comment = $mailInfo;
+
+        $this->_email = new Email();
 
         //发件人邮箱
         $this->_email->from = $this->_cfg->user;
@@ -381,6 +385,7 @@ class Action extends Widget implements \Widget\ActionInterface
         $mailer->ClearAddresses();
         $mailer->ClearReplyTos();
 
+        unset($this->_email); //销毁对象
         return $result;
     }
 
