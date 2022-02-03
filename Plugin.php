@@ -48,12 +48,12 @@ class Plugin implements PluginInterface
 	public static function activate()
 	{
 		$msg = self::dbInstall();
-		\Typecho\Plugin::factory('Widget_Feedback')->finishComment = ['TypechoPlugin\CommentToMail\Plugin', 'parseComment'];
-		\Typecho\Plugin::factory('Widget_Comments_Edit')->finishComment = ['TypechoPlugin\CommentToMail\Plugin', 'parseComment'];
-		\Typecho\Plugin::factory('Widget_Comments_Edit')->mark = ['TypechoPlugin\CommentToMail\Plugin', 'passComment'];
+		\Typecho\Plugin::factory('\Widget\Feedback')->finishComment = ['TypechoPlugin\CommentToMail\Plugin', 'parseComment'];
+		\Typecho\Plugin::factory('\Widget\Comments\Edit')->finishComment = ['TypechoPlugin\CommentToMail\Plugin', 'parseComment'];
+		\Typecho\Plugin::factory('\Widget\Comments\Edit')->mark = ['TypechoPlugin\CommentToMail\Plugin', 'passComment'];
 
 		Helper::addAction(self::$_action, 'TypechoPlugin\CommentToMail\Action');
-		Helper::addRoute('commentToMailProcessQueue', '/commentToMailProcessQueue/', 'TypechoPlugin\CommentToMail\Action', 'processQueue');
+		//Helper::addRoute('commentToMailProcessQueue', '/commentToMailProcessQueue/', 'TypechoPlugin\CommentToMail\Action', 'processQueue');
 		Helper::addPanel(1, self::$_panel, '评论邮件提醒', '评论邮件提醒控制台', 'administrator');
 		return _t($msg);
 	}
@@ -67,7 +67,7 @@ class Plugin implements PluginInterface
 	public static function deactivate()
 	{
 		Helper::removeAction(self::$_action);
-		Helper::removeRoute('commentToMailProcessQueue');
+		//Helper::removeRoute('commentToMailProcessQueue');
 		Helper::removePanel(1, self::$_panel);
 	}
 
@@ -272,38 +272,34 @@ class Plugin implements PluginInterface
 	}
 
 	/**
-	 * 获取邮件内容
+	 * 获取邮件内容(拦截评论)
 	 *
 	 * @param $comment 调用参数
 	 * @return void
 	 */
 	public static function parseComment($comment)
 	{
-		$options = Widget::widget('Widget_Options');
-		$cfg = [
-			'siteTitle' => $options->title,
-			'timezone'  => $options->timezone,
-			'cid'       => $comment->cid,
-			'coid'      => $comment->coid,
-			'created'   => $comment->created,
-			'author'    => $comment->author,
-			'authorId'  => $comment->authorId,
-			'ownerId'   => $comment->ownerId,
-			'mail'      => $comment->mail,
-			'ip'        => $comment->ip,
-			'title'     => $comment->title,
-			'text'      => $comment->text,
-			'permalink' => $comment->permalink,
-			'status'    => $comment->status,
-			'parent'    => $comment->parent,
-			'manage'    => $options->siteUrl . __TYPECHO_ADMIN_DIR__ . "manage-comments.php"
-		];
+		$comment = new \TypechoPlugin\CommentToMail\lib\Comment;
+
+		$comment->cid = $comment->cid;
+		$comment->coid = $comment->coid;
+		$comment->created = $comment->created;
+		$comment->ip = $comment->ip;
+		$comment->author = $comment->author;
+		$comment->mail = $comment->mail;
+		$comment->authorId = $comment->authorId;
+		$comment->ownerId = $comment->ownerId;
+		$comment->title = $comment->title;
+		$comment->text = $comment->text;
+		$comment->permalink = $comment->permalink;
+		$comment->status = $comment->status;
+		$comment->parent = $comment->parent;
 
 		// 添加至队列
 		$db = Db::get();
 		$db->query(
 			$db->insert($db->getPrefix() . 'mail')->rows([
-				'content' => base64_encode(serialize((object)$cfg)),
+				'content' => base64_encode(serialize((object)$comment)),
 				'sent' => '0'
 			])
 		);

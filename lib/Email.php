@@ -34,14 +34,14 @@ class Email
     public string $fromName;
 
     /**
-     * 收件人
+     * reply地址
      *
      * @var string
      */
     public string $to;
 
     /**
-     * 收件人姓名
+     * reply姓名
      *
      * @var string
      */
@@ -67,4 +67,19 @@ class Email
      * @var string
      */
     public string $msgHtml;
+
+
+    /**
+     * 向博主发邮件的标题
+     *
+     * @var string
+     */
+    public string $titleForOwner;
+
+    /**
+     * 向访客发邮件的标题
+     *
+     * @var string
+     */
+    public string $titleForGuest;
 }
