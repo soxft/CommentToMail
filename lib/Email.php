@@ -19,5 +19,52 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  */
 class Email
 {
-    public $to;
+    /**
+     * 寄件人
+     *
+     * @var string
+     */
+    public string $from;
+
+    /**
+     * 寄件人姓名
+     *
+     * @var string
+     */
+    public string $fromName;
+
+    /**
+     * 收件人
+     *
+     * @var string
+     */
+    public string $to;
+
+    /**
+     * 收件人姓名
+     *
+     * @var string
+     */
+    public string $toName;
+
+    /**
+     * 邮件主题
+     *
+     * @var string
+     */
+    public string $subject;
+
+    /**
+     * 邮件内容
+     *
+     * @var string
+     */
+    public string $altBody;
+
+    /**
+     * 邮件内容
+     *
+     * @var string
+     */
+    public string $msgHtml;
 }

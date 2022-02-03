@@ -12,10 +12,10 @@ namespace TypechoPlugin\CommentToMail;
 
 use \Utils\Helper;
 use \Typecho\{Widget, Db};
+use \TypechoPlugin\CommentToMail\lib\Email;
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
-
 
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
@@ -80,6 +80,13 @@ class Action extends Widget implements \Widget\ActionInterface
     private string $_template_dir = __DIR__ . '/template/';
 
     /**
+     * 邮件对象
+     *
+     * @var Email
+     */
+    private Email $_email;
+
+    /**
      * 入口方法
      *
      * @access public
@@ -92,23 +99,6 @@ class Action extends Widget implements \Widget\ActionInterface
         $this->on($this->request->is('do=testMail'))->testMail();
         $this->on($this->request->is('do=editTheme'))->editTheme($this->request->edit);
         $this->on($this->request->is('do=deliverMail'))->deliverMail($this->request->key);
-    }
-
-
-    /**
-     * 处理发信队列
-     * 
-     * @return void
-     */
-    public function processQueue(): void
-    {
-        if (!isset($this->_cfg->verify) || !in_array('nonAuth', $this->_cfg->verify)) {
-            $this->response->throwJson([
-                'result' => 0,
-                'msg' => 'Forbidden'
-            ]);
-        }
-        $this->deliverMail($this->_cfg->key);
     }
 
     /**
@@ -124,6 +114,23 @@ class Action extends Widget implements \Widget\ActionInterface
         $this->_user = $this->widget('Widget_User');
         $this->_options = $this->widget('Widget_Options');
         $this->_cfg = Helper::options()->plugin('CommentToMail');
+        $this->_email = new Email();
+    }
+
+    /**
+     * 处理发信队列
+     * 
+     * @return void
+     */
+    public function processQueue(): void
+    {
+        if (!isset($this->_cfg->verify) || !in_array('nonAuth', $this->_cfg->verify)) {
+            $this->response->throwJson([
+                'result' => 0,
+                'msg' => 'Forbidden'
+            ]);
+        }
+        $this->deliverMail($this->_cfg->key);
     }
 
     /**
@@ -343,10 +350,12 @@ class Action extends Widget implements \Widget\ActionInterface
         return $this;
     }
 
-    /*
+    /**
      * 发送邮件
+     * 
+     * @return bool|string|null
      */
-    public function sendMail()
+    public function sendMail(): bool|string|NULL
     {
         /** 载入邮件组件 */
         $mailer = new PHPMailer();
@@ -362,10 +371,7 @@ class Action extends Widget implements \Widget\ActionInterface
                 break;
             case 'smtp':
                 $mailer->IsSMTP();
-
-                if (in_array('validate', $this->_cfg->validate)) {
-                    $mailer->SMTPAuth = true;
-                }
+                if (in_array('validate', $this->_cfg->validate)) $mailer->SMTPAuth = true;
 
                 if (in_array('ssl', $this->_cfg->validate)) {
                     $mailer->SMTPSecure = "ssl";
@@ -384,14 +390,14 @@ class Action extends Widget implements \Widget\ActionInterface
         $mailer->AddReplyTo($this->_email->to, $this->_email->toName);
         $mailer->Subject = $this->_email->subject;
         $mailer->AltBody = $this->_email->altBody;
-        if (in_array('solve544', $this->_cfg->validate)) {          /* 躲避审查造成的 544 错误 */
-            $mailer->AddCC($this->_email->from);
-        }
+        if (in_array('solve544', $this->_cfg->validate)) $mailer->AddCC($this->_email->from); // 躲避审查造成的 544 错误 
+
         $mailer->MsgHTML($this->_email->msgHtml);
         $mailer->AddAddress($this->_email->to, $this->_email->toName);
         $mailer->SMTPOptions = array('ssl' => array('verify_peer' => false, 'verify_peer_name' => false, 'allow_self_signed' => true));
 
-        $result = $mailer->Send() ?? $mailer->ErrorInfo;
+        $result = $mailer->Send();
+        if (!$result) $result = $mailer->ErrorInfo;
 
         $mailer->ClearAddresses();
         $mailer->ClearReplyTos();
@@ -440,8 +446,8 @@ class Action extends Widget implements \Widget\ActionInterface
 
         /** 提示信息 */
         $this->widget('Widget_Notice')->set(
-            true === $result ? _t('邮件发送成功') : _t('邮件发送失败:' . $result),
-            true === $result ? 'success' : 'notice'
+            $result ? _t('邮件发送成功') : _t('邮件发送失败: ' . $result),
+            $result ? 'success' : 'notice'
         );
 
         /** 转向原页 */

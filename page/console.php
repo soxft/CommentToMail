@@ -57,9 +57,7 @@ $title = $current == 'index' ? $menu->title : '编辑邮件模板 ' . $theme;
                     <div class="col-mb-12 col-tb-8 col-9 content">
                         <form method="post" name="theme" id="theme" action="<?php $options->index('/action/' . Plugin::$_action); ?>">
                             <label for="content" class="sr-only"><?php _e('编辑源码'); ?></label>
-                            <textarea name="content" id="content" class="w-100 mono" <?php if (!$files->currentIsWriteable()) echo 'readonly'; ?>>
-                                <?php echo $files->currentContent(); ?>
-                            </textarea>
+                            <textarea name="content" id="content" class="w-100 mono" <?php if (!$files->currentIsWriteable()) echo 'readonly'; ?>><?php echo $files->currentContent(); ?></textarea>
                             <p class="submit">
                                 <?php if ($files->currentIsWriteable()) : ?>
                                     <input type="hidden" name="do" value="editTheme" />
