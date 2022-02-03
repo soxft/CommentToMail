@@ -197,7 +197,9 @@ class Action extends Widget implements \Widget\ActionInterface
         $toMe = (in_array('to_me', $this->_cfg->other) && $this->_comment->ownerId == $this->_comment->authorId) ? true : false;
 
         //向博主发信
-        if ($this->_comment->parent == 0 && in_array($this->_comment->status, $this->_cfg->status) && in_array('to_owner', $this->_cfg->other) && ($toMe || $this->_comment->ownerId != $this->_comment->authorId)) {
+        // TODO $this->_comment->parent === '0' // parent === ‘0’ 时 为根评论
+        // 如果在此处判断 会导致 别人评论别人的评论时 不会发送邮件给博主 后续fix
+        if (in_array($this->_comment->status, $this->_cfg->status) && in_array('to_owner', $this->_cfg->other) && ($toMe || $this->_comment->ownerId != $this->_comment->authorId)) {
             if (!$this->_cfg->mail) {
                 self::widget('\Widget\Users\Author@temp' . $this->_comment->cid, ['uid' => $this->_comment->ownerId])->to($user);
                 $this->_email->reciver = $user->mail;
@@ -218,7 +220,7 @@ class Action extends Widget implements \Widget\ActionInterface
         }
 
         /** 向访客发信 */
-        if ($this->_comment->parent !== 0 && $this->_comment->status == 'approved' && in_array('to_guest', $this->_cfg->other)) {
+        if ($this->_comment->parent !== '0' && $this->_comment->status == 'approved' && in_array('to_guest', $this->_cfg->other)) {
             /**  如果联系我的邮件地址为空，则使用文章作者的邮件地址 */
             if (!$this->_cfg->contactme) {
                 if (!isset($user) || !$user) {
@@ -229,9 +231,8 @@ class Action extends Widget implements \Widget\ActionInterface
                 $this->_comment->contactme = $this->_cfg->contactme;
             }
 
-            $original = $this->_db->fetchRow($this->_db->select('author', 'mail', 'text')
-                ->from('table.comments')
-                ->where('coid = ?', $this->_comment->parent));
+            $original = $this->_db->fetchRow($this->_db->select('author', 'mail', 'text')->from('table.comments')->where('coid = ?', $this->_comment->parent));
+            // 被评论者
             if (in_array('to_me', $this->_cfg->other) || $this->_comment->mail != $original['mail']) {
                 $this->_comment->originalText   = $original['text'];
                 $this->_comment->originalAuthor = $original['author'];
@@ -244,6 +245,8 @@ class Action extends Widget implements \Widget\ActionInterface
             }
         }
 
+        unset($this->_comment); //销毁评论对象
+        unset($this->_email); //销毁对象
         return true;
     }
 
@@ -379,8 +382,6 @@ class Action extends Widget implements \Widget\ActionInterface
         $mailer->ClearAddresses();
         $mailer->ClearReplyTos();
 
-        unset($this->_email); //销毁对象
-        unset($this->_comment); //销毁评论对象
         return $result;
     }
 
