@@ -207,7 +207,7 @@ class Plugin implements PluginInterface
 			],
 			['to_owner', 'to_guest'],
 			'其他设置',
-			_t('由于Typecho钩子限制, 开启审核后通过审核会重复通知。')
+			_t('由于Typecho钩子限制, 开启审核后通过审核会重复通知.')
 		);
 		$form->addInput($other->multiMode());
 

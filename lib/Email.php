@@ -38,14 +38,28 @@ class Email
      *
      * @var string
      */
-    public string $to;
+    public string $replyTo;
 
     /**
      * reply姓名
      *
      * @var string
      */
-    public string $toName;
+    public string $replyToName;
+
+    /**
+     * 收件人地址
+     *
+     * @var string
+     */
+    public string $reciver;
+
+    /**
+     * 收件人姓名
+     * @var string
+     */
+
+    public string $reciverName;
 
     /**
      * 邮件主题

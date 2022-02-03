@@ -201,9 +201,9 @@ class Action extends Widget implements \Widget\ActionInterface
             if (in_array($this->_comment->status, $this->_cfg->status) && in_array('to_owner', $this->_cfg->other) && ($toMe || $this->_comment->ownerId != $this->_comment->authorId)) {
                 if (!$this->_cfg->mail) {
                     self::widget('\Widget\Users\Author@temp' . $this->_comment->cid, ['uid' => $this->_comment->ownerId])->to($user);
-                    $this->_email->to = $user->mail;
+                    $this->_email->reciver = $user->mail;
                 } else {
-                    $this->_email->to = $this->_cfg->mail;
+                    $this->_email->reciver = $this->_cfg->mail;
                 }
                 $this->authorMail()->sendMail();
             }
@@ -224,7 +224,7 @@ class Action extends Widget implements \Widget\ActionInterface
                     ->from('table.comments')
                     ->where('coid = ?', $this->_comment->parent));
                 if (in_array('to_me', $this->_cfg->other) || $this->_comment->mail != $original['mail']) {
-                    $this->_comment->to             = $original['mail'];
+                    $this->_comment->reciver        = $original['mail'];
                     $this->_comment->originalText   = $original['text'];
                     $this->_comment->originalAuthor = $original['author'];
                     $this->guestMail()->sendMail();
@@ -243,8 +243,8 @@ class Action extends Widget implements \Widget\ActionInterface
     private function authorMail()
     {
         // 设置邮件回复信息
-        $this->_email->toName = $this->_comment->author;
-        $this->_email->to = $this->_comment->mail; //评论者的邮箱
+        $this->_email->replyTo = $this->_comment->mail; //评论者的邮箱
+        $this->_email->replyToName = $this->_comment->author;
 
         $date = new \Typecho\Date($this->_comment->created);
         $status = [
@@ -289,8 +289,11 @@ class Action extends Widget implements \Widget\ActionInterface
      */
     public function guestMail()
     {
-        $this->_email->to  = $this->_comment->mail;
-        $this->_email->toName = $this->_comment->originalAuthor ? $this->_comment->originalAuthor : $this->_options->title;
+        $this->_email->replyTo  = $this->_comment->originalMail;
+        $this->_email->replyToName = $this->_comment->author ? $this->_comment->author : $this->_options->title;
+
+        $this->_email->reciverName = $this->_comment->originalAuthor;
+
         $date    = new \Typecho\Date($this->_comment->created);
 
         $search  = [
@@ -360,13 +363,13 @@ class Action extends Widget implements \Widget\ActionInterface
         }
 
         $mailer->SetFrom($this->_email->from, $this->_email->fromName);
-        $mailer->AddReplyTo($this->_email->to, $this->_email->toName);
+        if (isset($this->_email->replyTo) && isset($this->_email->replyToName)) $mailer->AddReplyTo($this->_email->replyTo, $this->_email->replyToName);
         $mailer->Subject = $this->_email->subject;
         $mailer->AltBody = $this->_email->altBody;
         if (in_array('solve544', $this->_cfg->validate)) $mailer->AddCC($this->_email->from); // 躲避审查造成的 544 错误 
 
         $mailer->MsgHTML($this->_email->msgHtml);
-        $mailer->AddAddress($this->_email->to, $this->_email->toName);
+        $mailer->AddAddress($this->_email->reciver, $this->_email->reciverName);
         $mailer->SMTPOptions = array('ssl' => array('verify_peer' => false, 'verify_peer_name' => false, 'allow_self_signed' => true));
 
         $result = $mailer->Send();
@@ -411,8 +414,8 @@ class Action extends Widget implements \Widget\ActionInterface
 
         $this->_email->from = $this->_cfg->user;
         $this->_email->fromName = $this->_cfg->fromName ? $this->_cfg->fromName : $this->_options->title;
-        $this->_email->to = $email['to'] ? $email['to'] : $this->_user->mail;
-        $this->_email->toName = $email['toName'] ? $email['toName'] : $this->_user->screenName;
+        $this->_email->reciver = $email['to'] ? $email['to'] : $this->_user->mail;
+        $this->_email->reciverName = $email['toName'] ? $email['toName'] : $this->_user->screenName;
         $this->_email->subject = $email['title'];
         $this->_email->altBody = $email['content'];
         $this->_email->msgHtml = $email['content'];
