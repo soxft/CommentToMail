@@ -23,6 +23,11 @@ require_once 'PHPMailer/SMTP.php';
 require_once 'PHPMailer/PHPMailer.php';
 require_once 'PHPMailer/Exception.php';
 
+/**
+ * action
+ * 
+ * @package CommentToMail
+ */
 class Action extends Widget implements \Widget\ActionInterface
 {
     /** 
@@ -97,7 +102,6 @@ class Action extends Widget implements \Widget\ActionInterface
      */
     public function processQueue(): void
     {
-        $this->init();
         if (!isset($this->_cfg->verify) || !in_array('nonAuth', $this->_cfg->verify)) {
             $this->response->throwJson([
                 'result' => 0,

@@ -16,6 +16,11 @@ use \Typecho\Widget\Helper\Form\Element\{Text, Hidden, Submit, Textarea};
 
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
+/**
+ * Console
+ * 
+ * @package CommentToMail
+ */
 class Console extends Widget
 {
     /** 

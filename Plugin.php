@@ -19,6 +19,11 @@ use \Typecho\Widget\Helper\Form\Element\{Password, Text, Radio, Checkbox};
 
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
+/**
+ * Plugin
+ * 
+ * @package CommentToMail
+ */
 class Plugin implements PluginInterface
 {
 	/** 

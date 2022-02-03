@@ -12,6 +12,11 @@ namespace TypechoPlugin\CommentToMail\lib;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
+/**
+ * Email
+ * 
+ * @package CommentToMail
+ */
 class Email
 {
     public $to;
