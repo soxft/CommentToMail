@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS `typecho_mail` (
-  `id` int(11) unsigned NOT NULL auto_increment,
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `content` text NOT NULL,
-  `sent` tinyint(1) DEFAULT '0',
+  `sent` int(1) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE = MYISAM DEFAULT CHARSET = % charset %;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
