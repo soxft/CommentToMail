@@ -205,6 +205,12 @@ class Action extends Widget implements \Widget\ActionInterface
                 } else {
                     $this->_email->reciver = $this->_cfg->mail;
                 }
+                if (!$this->_cfg->name) {
+                    self::widget('\Widget\Users\Author@temp' . $this->_comment->cid, ['uid' => $this->_comment->ownerId])->to($user);
+                    $this->_email->reciverName = $user->name;
+                } else {
+                    $this->_email->reciverName = $this->_cfg->name;
+                }
                 $this->authorMail()->sendMail();
             }
         } else {
