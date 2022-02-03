@@ -96,9 +96,11 @@ class Action extends Widget implements \Widget\ActionInterface
     {
         $this->init();
 
-        $this->on($this->request->is('do=testMail'))->testMail();
-        $this->on($this->request->is('do=editTheme'))->editTheme($this->request->edit);
-        $this->on($this->request->is('do=deliverMail'))->deliverMail($this->request->key);
+        $this->on($this->request->is('do=deliverMail'))->deliverMail($this->request->key);  //邮件队列
+
+        if (!$this->_user->hasLogin()) $this->response->redirect($this->_options->loginUrl); //用户未登录
+        $this->on($this->request->is('do=testMail'))->testMail();                           //测试邮件
+        $this->on($this->request->is('do=editTheme'))->editTheme($this->request->edit);     //编辑主题
     }
 
     /**
@@ -111,8 +113,8 @@ class Action extends Widget implements \Widget\ActionInterface
         $this->_db = Db::get();
         $this->_prefix = $this->_db->getPrefix();
 
-        $this->_user = $this->widget('Widget_User');
-        $this->_options = $this->widget('Widget_Options');
+        $this->_user = $this->widget('\Widget\User');
+        $this->_options = $this->widget('\Widget\Options');
         $this->_cfg = Helper::options()->plugin('CommentToMail');
         $this->_email = new Email();
     }
@@ -312,8 +314,7 @@ class Action extends Widget implements \Widget\ActionInterface
     }
 
     /**
-     * 访问邮件信息
-     * @return $this
+     * 访客邮件信息
      */
     public function guestMail()
     {
@@ -431,7 +432,6 @@ class Action extends Widget implements \Widget\ActionInterface
             $this->response->goBack();
         }
 
-        $this->init();
         $email = $this->request->from('toName', 'to', 'title', 'content');
 
         $this->_email->from = $this->_cfg->user;
