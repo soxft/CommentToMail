@@ -211,6 +211,10 @@ class Action extends Widget implements \Widget\ActionInterface
                 } else {
                     $this->_email->reciverName = $this->_cfg->name;
                 }
+
+                // 设置邮件回复信息
+                $this->_email->replyTo = $this->_comment->mail; //评论者的邮箱
+                $this->_email->replyToName = $this->_comment->author;
                 $this->authorMail()->sendMail();
             }
         } else {
@@ -230,9 +234,13 @@ class Action extends Widget implements \Widget\ActionInterface
                     ->from('table.comments')
                     ->where('coid = ?', $this->_comment->parent));
                 if (in_array('to_me', $this->_cfg->other) || $this->_comment->mail != $original['mail']) {
-                    $this->_comment->reciver        = $original['mail'];
+                    $this->_comment->reciver        = $original['mail']; //origin是 被评论者
                     $this->_comment->originalText   = $original['text'];
                     $this->_comment->originalAuthor = $original['author'];
+
+                    $this->_email->reciverName = $original['author'];
+                    $this->_email->replyTo  = $this->_comment->mail; //当前评论者的邮箱
+                    $this->_email->replyToName = $this->_comment->author ? $this->_comment->author : $this->_options->title;
                     $this->guestMail()->sendMail();
                 }
             }
@@ -248,10 +256,6 @@ class Action extends Widget implements \Widget\ActionInterface
      */
     private function authorMail()
     {
-        // 设置邮件回复信息
-        $this->_email->replyTo = $this->_comment->mail; //评论者的邮箱
-        $this->_email->replyToName = $this->_comment->author;
-
         $date = new \Typecho\Date($this->_comment->created);
         $status = [
             "approved" => '通过',
@@ -295,14 +299,8 @@ class Action extends Widget implements \Widget\ActionInterface
      */
     public function guestMail()
     {
-        $this->_email->replyTo  = $this->_comment->originalMail;
-        $this->_email->replyToName = $this->_comment->author ? $this->_comment->author : $this->_options->title;
-
-        $this->_email->reciverName = $this->_comment->originalAuthor;
-
-        $date    = new \Typecho\Date($this->_comment->created);
-
-        $search  = [
+        $date = new \Typecho\Date($this->_comment->created);
+        $search = [
             '{siteTitle}',
             '{{title}}',
             '{{author_p}}',
