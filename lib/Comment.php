@@ -98,4 +98,25 @@ class Comment
 	 */
 	public string $status;
 	public string $parent;
+
+	/**
+	 * 对于访客时 访客的原始文字
+	 *
+	 * @var string
+	 */
+	public string $originalText;
+
+	/**
+	 * 对于访客时 访客的名称
+	 *
+	 * @var string
+	 */
+	public string $originalAuthor;
+
+	/**
+	 * 联系邮箱
+	 *
+	 * @var string
+	 */
+	public string $contactme;
 }

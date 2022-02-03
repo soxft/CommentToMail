@@ -87,6 +87,13 @@ class Action extends Widget implements \Widget\ActionInterface
     private Email $_email;
 
     /**
+     * 评论对象
+     *
+     * @var \TypechoPlugin\CommentToMail\lib\Comment
+     */
+    private \TypechoPlugin\CommentToMail\lib\Comment $_comment;
+
+    /**
      * 入口方法
      *
      * @access public
@@ -156,15 +163,13 @@ class Action extends Widget implements \Widget\ActionInterface
         //计数器
         $success = 0;
         foreach ($mailQueue as &$mail) {
-            /**
-             * @var \TypechoPlugin\CommentToMail\lib\Comment
-             */
-            $mailInfo = unserialize(base64_decode($mail['content']));
+
+            $this->_comment = unserialize(base64_decode($mail['content']));
 
             /** 发送邮件 */
-            if (!$mailInfo) continue;
+            if (!$this->_comment) continue;
 
-            if ($this->processMail($mailInfo)) {
+            if ($this->processMail()) {
                 $this->_db->query($this->_db->update($this->_prefix . 'mail')->rows(['sent' => 1])->where('id = ?', $mail['id'])); //标识为已发送
                 $success++;
             }
@@ -189,14 +194,10 @@ class Action extends Widget implements \Widget\ActionInterface
     /**
      * 处理发信
      *
-     * @param \TypechoPlugin\CommentToMail\lib\Comment $mailInfo
      * @return boolean
      */
-    private function processMail(\TypechoPlugin\CommentToMail\lib\Comment $mailInfo): bool
+    private function processMail(): bool
     {
-
-        $this->_comment = $mailInfo;
-
         $this->_email = new Email();
 
         //发件人邮箱
@@ -217,7 +218,7 @@ class Action extends Widget implements \Widget\ActionInterface
         if ($this->_comment->parent == 0) {
             if (in_array($this->_comment->status, $this->_cfg->status) && in_array('to_owner', $this->_cfg->other) && ($toMe || $this->_comment->ownerId != $this->_comment->authorId)) {
                 if (!$this->_cfg->mail) {
-                    self::widget('\Widget\Users\Author@temp' . $this->_email->cid, ['uid' => $this->_email->ownerId])->to($user);
+                    self::widget('\Widget\Users\Author@temp' . $this->_comment->cid, ['uid' => $this->_email->ownerId])->to($user);
                     $this->_email->to = $user->mail;
                 } else {
                     $this->_email->to = $this->_cfg->mail;
@@ -240,13 +241,15 @@ class Action extends Widget implements \Widget\ActionInterface
                     ->from('table.comments')
                     ->where('coid = ?', $this->_comment->parent));
                 if (in_array('to_me', $this->_cfg->other) || $this->_email->mail != $original['mail']) {
-                    $this->_email->to             = $original['mail'];
-                    $this->_email->originalText   = $original['text'];
-                    $this->_email->originalAuthor = $original['author'];
+                    $this->_comment->to             = $original['mail'];
+                    $this->_comment->originalText   = $original['text'];
+                    $this->_comment->originalAuthor = $original['author'];
                     $this->guestMail()->sendMail();
                 }
             }
         }
+
+        unset($this->_comment); //销毁评论对象
         return true;
     }
 
@@ -256,13 +259,16 @@ class Action extends Widget implements \Widget\ActionInterface
      */
     private function authorMail()
     {
-        $this->_email->toName = $this->_options->title;
+        // 设置邮件回复信息
+        $this->_email->toName = $this->_comment->author;
+        $this->_email->to = $this->_comment->mail; //评论者的邮箱
+
         $date = new \Typecho\Date($this->_email->created);
-        $status = array(
+        $status = [
             "approved" => '通过',
             "waiting"  => '待审',
             "spam"     => '垃圾'
-        );
+        ];
         $search  = array(
             '{{siteTitle}',
             '{{title}}',
@@ -300,35 +306,35 @@ class Action extends Widget implements \Widget\ActionInterface
      */
     public function guestMail()
     {
-        $this->_email->toName = $this->_email->originalAuthor ? $this->_email->originalAuthor : $this->_email->siteTitle;
+        $this->_email->toName = $this->_comment->author ? $this->_comment->author : $this->_options->title;
         $date    = new \Typecho\Date($this->_email->created);
-        $time    = $date->format('Y-m-d H:i:s');
-        $search  = array(
+
+        $search  = [
             '{siteTitle}',
             '{title}',
             '{author_p}',
             '{author}',
             '{permalink}',
             '{text}',
-            '{contactme}',
             '{text_p}',
+            '{contactme}',
             '{time}'
-        );
-        $replace = array(
-            $this->_email->siteTitle,
-            $this->_email->title,
-            $this->_email->originalAuthor,
-            $this->_email->author,
-            $this->_email->permalink,
-            $this->_email->text,
-            $this->_email->contactme,
-            $this->_email->originalText,
-            $time
-        );
+        ];
+        $replace = [
+            $this->_options->title,
+            $this->_comment->title,
+            $this->_comment->originalAuthor,
+            $this->_comment->author,
+            $this->_comment->permalink,
+            $this->_comment->text,
+            $this->_comment->originalText,
+            $this->_comment->contactme,
+            $date->format('Y-m-d H:i:s'),
+        ];
 
         $this->_email->msgHtml = str_replace($search, $replace, $this->getTemplate('guest'));
         $this->_email->subject = str_replace($search, $replace, $this->_email->titleForGuest);
-        $this->_email->altBody = "作者:" . $this->_email->author . "\r\n链接:" . $this->_email->permalink . "\r\n评论:\r\n" . $this->_email->text;
+        $this->_email->altBody = "作者:" . $this->_comment->author . "\r\n链接:" . $this->_comment->permalink . "\r\n评论:\r\n" . $this->_comment->text;
 
         return $this;
     }
