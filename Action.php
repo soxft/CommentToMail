@@ -146,8 +146,8 @@ class Action extends Widget implements \Widget\ActionInterface
     {
         if ($key != $this->_cfg->key) {
             $this->response->throwJson([
-                'result' => 0,
-                'msg' => 'No permission'
+                'code' => -1,
+                'msg' => 'Permission deniend'
             ]);
         }
 
@@ -425,7 +425,7 @@ class Action extends Widget implements \Widget\ActionInterface
         $result = $this->sendMail();
 
         /** 提示信息 */
-        $this->widget('Widget_Notice')->set(
+        $this->widget('\Widget\Notice')->set(
             $result ? _t('邮件发送成功') : _t('邮件发送失败: ' . $result),
             $result ? 'success' : 'notice'
         );

@@ -279,27 +279,27 @@ class Plugin implements PluginInterface
 	 */
 	public static function parseComment($comment)
 	{
-		$comment = new \TypechoPlugin\CommentToMail\lib\Comment;
+		$commentClass = new \TypechoPlugin\CommentToMail\lib\Comment;
 
-		$comment->cid = $comment->cid;
-		$comment->coid = $comment->coid;
-		$comment->created = $comment->created;
-		$comment->ip = $comment->ip;
-		$comment->author = $comment->author;
-		$comment->mail = $comment->mail;
-		$comment->authorId = $comment->authorId;
-		$comment->ownerId = $comment->ownerId;
-		$comment->title = $comment->title;
-		$comment->text = $comment->text;
-		$comment->permalink = $comment->permalink;
-		$comment->status = $comment->status;
-		$comment->parent = $comment->parent;
+		$commentClass->cid = $comment->cid;
+		$commentClass->coid = $comment->coid;
+		$commentClass->created = $comment->created;
+		$commentClass->ip = $comment->ip;
+		$commentClass->author = $comment->author;
+		$commentClass->mail = $comment->mail;
+		$commentClass->authorId = $comment->authorId;
+		$commentClass->ownerId = $comment->ownerId;
+		$commentClass->title = $comment->title;
+		$commentClass->text = $comment->text;
+		$commentClass->permalink = $comment->permalink;
+		$commentClass->status = $comment->status;
+		$commentClass->parent = $comment->parent;
 
 		// 添加至队列
 		$db = Db::get();
 		$db->query(
 			$db->insert($db->getPrefix() . 'mail')->rows([
-				'content' => base64_encode(serialize((object)$comment)),
+				'content' => base64_encode(serialize((object)$commentClass)),
 				'sent' => '0'
 			])
 		);
