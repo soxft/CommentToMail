@@ -197,56 +197,53 @@ class Action extends Widget implements \Widget\ActionInterface
         $toMe = (in_array('to_me', $this->_cfg->other) && $this->_comment->ownerId == $this->_comment->authorId) ? true : false;
 
         //向博主发信
-        if ($this->_comment->parent == 0) {
-            if (in_array($this->_comment->status, $this->_cfg->status) && in_array('to_owner', $this->_cfg->other) && ($toMe || $this->_comment->ownerId != $this->_comment->authorId)) {
-                if (!$this->_cfg->mail) {
-                    self::widget('\Widget\Users\Author@temp' . $this->_comment->cid, ['uid' => $this->_comment->ownerId])->to($user);
-                    $this->_email->reciver = $user->mail;
-                } else {
-                    $this->_email->reciver = $this->_cfg->mail;
-                }
-                if (!$this->_cfg->name) {
-                    self::widget('\Widget\Users\Author@temp' . $this->_comment->cid, ['uid' => $this->_comment->ownerId])->to($user);
-                    $this->_email->reciverName = $user->name;
-                } else {
-                    $this->_email->reciverName = $this->_cfg->name;
-                }
-
-                // 设置邮件回复信息
-                $this->_email->replyTo = $this->_comment->mail; //评论者的邮箱
-                $this->_email->replyToName = $this->_comment->author;
-                $this->authorMail()->sendMail();
+        if ($this->_comment->parent == 0 && in_array($this->_comment->status, $this->_cfg->status) && in_array('to_owner', $this->_cfg->other) && ($toMe || $this->_comment->ownerId != $this->_comment->authorId)) {
+            if (!$this->_cfg->mail) {
+                self::widget('\Widget\Users\Author@temp' . $this->_comment->cid, ['uid' => $this->_comment->ownerId])->to($user);
+                $this->_email->reciver = $user->mail;
+            } else {
+                $this->_email->reciver = $this->_cfg->mail;
             }
-        } else {
-            /** 向访客发信 */
-            if ($this->_comment->status == 'approved' && in_array('to_guest', $this->_cfg->other)) {
-                /**  如果联系我的邮件地址为空，则使用文章作者的邮件地址 */
-                if (!$this->_cfg->contactme) {
-                    if (!isset($user) || !$user) {
-                        self::widget('\Widget\Users\Author@temp' . $this->_comment->cid, array('uid' => $this->_comment->ownerId))->to($user);
-                    }
-                    $this->_comment->contactme = $user->mail;
-                } else {
-                    $this->_comment->contactme = $this->_cfg->contactme;
-                }
+            if (!$this->_cfg->name) {
+                self::widget('\Widget\Users\Author@temp' . $this->_comment->cid, ['uid' => $this->_comment->ownerId])->to($user);
+                $this->_email->reciverName = $user->name;
+            } else {
+                $this->_email->reciverName = $this->_cfg->name;
+            }
 
-                $original = $this->_db->fetchRow($this->_db->select('author', 'mail', 'text')
-                    ->from('table.comments')
-                    ->where('coid = ?', $this->_comment->parent));
-                if (in_array('to_me', $this->_cfg->other) || $this->_comment->mail != $original['mail']) {
-                    $this->_comment->originalText   = $original['text'];
-                    $this->_comment->originalAuthor = $original['author'];
+            // 设置邮件回复信息
+            $this->_email->replyTo = $this->_comment->mail; //评论者的邮箱
+            $this->_email->replyToName = $this->_comment->author;
+            $this->authorMail()->sendMail();
+        }
 
-                    $this->_email->reciver = $original['mail'];
-                    $this->_email->reciverName = $original['author'];
-                    $this->_email->replyTo  = $this->_comment->mail; //当前评论者的邮箱
-                    $this->_email->replyToName = $this->_comment->author ? $this->_comment->author : $this->_options->title;
-                    $this->guestMail()->sendMail();
+        /** 向访客发信 */
+        if ($this->_comment->parent !== 0 && $this->_comment->status == 'approved' && in_array('to_guest', $this->_cfg->other)) {
+            /**  如果联系我的邮件地址为空，则使用文章作者的邮件地址 */
+            if (!$this->_cfg->contactme) {
+                if (!isset($user) || !$user) {
+                    self::widget('\Widget\Users\Author@temp' . $this->_comment->cid, array('uid' => $this->_comment->ownerId))->to($user);
                 }
+                $this->_comment->contactme = $user->mail;
+            } else {
+                $this->_comment->contactme = $this->_cfg->contactme;
+            }
+
+            $original = $this->_db->fetchRow($this->_db->select('author', 'mail', 'text')
+                ->from('table.comments')
+                ->where('coid = ?', $this->_comment->parent));
+            if (in_array('to_me', $this->_cfg->other) || $this->_comment->mail != $original['mail']) {
+                $this->_comment->originalText   = $original['text'];
+                $this->_comment->originalAuthor = $original['author'];
+
+                $this->_email->reciver = $original['mail'];
+                $this->_email->reciverName = $original['author'];
+                $this->_email->replyTo  = $this->_comment->mail; //当前评论者的邮箱
+                $this->_email->replyToName = $this->_comment->author ? $this->_comment->author : $this->_options->title;
+                $this->guestMail()->sendMail();
             }
         }
 
-        unset($this->_comment); //销毁评论对象
         return true;
     }
 
@@ -383,6 +380,7 @@ class Action extends Widget implements \Widget\ActionInterface
         $mailer->ClearReplyTos();
 
         unset($this->_email); //销毁对象
+        unset($this->_comment); //销毁评论对象
         return $result;
     }
 
