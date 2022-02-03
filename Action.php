@@ -234,10 +234,10 @@ class Action extends Widget implements \Widget\ActionInterface
                     ->from('table.comments')
                     ->where('coid = ?', $this->_comment->parent));
                 if (in_array('to_me', $this->_cfg->other) || $this->_comment->mail != $original['mail']) {
-                    $this->_comment->reciver        = $original['mail']; //origin是 被评论者
                     $this->_comment->originalText   = $original['text'];
                     $this->_comment->originalAuthor = $original['author'];
 
+                    $this->_email->reciver = $original['mail'];
                     $this->_email->reciverName = $original['author'];
                     $this->_email->replyTo  = $this->_comment->mail; //当前评论者的邮箱
                     $this->_email->replyToName = $this->_comment->author ? $this->_comment->author : $this->_options->title;
