@@ -53,7 +53,6 @@ class Plugin implements PluginInterface
 		\Typecho\Plugin::factory('\Widget\Comments\Edit')->mark = ['TypechoPlugin\CommentToMail\Plugin', 'passComment'];
 
 		Helper::addAction(self::$_action, 'TypechoPlugin\CommentToMail\Action');
-		//Helper::addRoute('commentToMailProcessQueue', '/commentToMailProcessQueue/', 'TypechoPlugin\CommentToMail\Action', 'processQueue');
 		Helper::addPanel(1, self::$_panel, '评论邮件提醒', '评论邮件提醒控制台', 'administrator');
 		return _t($msg);
 	}

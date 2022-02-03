@@ -126,24 +126,6 @@ class Action extends Widget implements \Widget\ActionInterface
     }
 
     /**
-     * 处理发信队列
-     * 
-     * @return void
-     */
-    public function processQueue(): void
-    {
-        /*
-        if (!isset($this->_cfg->verify) || !in_array('nonAuth', $this->_cfg->verify)) {
-            $this->response->throwJson([
-                'result' => 0,
-                'msg' => 'Forbidden'
-            ]);
-        }
-        $this->deliverMail($this->_cfg->key);
-        */
-    }
-
-    /**
      * 发送邮件
      * 
      * @param string $key
