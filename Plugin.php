@@ -173,7 +173,7 @@ class Plugin implements PluginInterface
 		$titleForOwner = new Text(
 			'titleForOwner',
 			null,
-			"[{title}] 一文有新的评论",
+			"[{{title}}] 一文有新的评论",
 			_t('博主接收邮件标题')
 		);
 		$form->addInput($titleForOwner->addRule('required', _t('博主接收邮件标题 不能为空')));
@@ -181,7 +181,7 @@ class Plugin implements PluginInterface
 		$titleForGuest = new Text(
 			'titleForGuest',
 			null,
-			"您在 [{title}] 的评论有了回复",
+			"您在 [{{title}}] 的评论有了回复",
 			_t('访客接收邮件标题')
 		);
 		$form->addInput($titleForGuest->addRule('required', _t('访客接收邮件标题 不能为空')));
