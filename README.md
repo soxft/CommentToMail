@@ -14,7 +14,7 @@
 
 ## Copyright
 
-CommentToMail 作为一款老牌Typecho 邮件推送插件, 具有多个分支. 但大都长时间为更新, 且无法支持 php8 与 Typecho 1.2.0. 
+CommentToMail 作为一款老牌Typecho 邮件推送插件, 具有多个分支. 但大都长时间未更新, 且无法支持 php8 与 Typecho 1.2.0. 
 
 本项目部分参考原项目 且对其进行大量重构.
 
