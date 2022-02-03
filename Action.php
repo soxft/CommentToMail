@@ -218,7 +218,7 @@ class Action extends Widget implements \Widget\ActionInterface
         if ($this->_comment->parent == 0) {
             if (in_array($this->_comment->status, $this->_cfg->status) && in_array('to_owner', $this->_cfg->other) && ($toMe || $this->_comment->ownerId != $this->_comment->authorId)) {
                 if (!$this->_cfg->mail) {
-                    self::widget('\Widget\Users\Author@temp' . $this->_comment->cid, ['uid' => $this->_email->ownerId])->to($user);
+                    self::widget('\Widget\Users\Author@temp' . $this->_comment->cid, ['uid' => $this->_comment->ownerId])->to($user);
                     $this->_email->to = $user->mail;
                 } else {
                     $this->_email->to = $this->_cfg->mail;
@@ -229,18 +229,19 @@ class Action extends Widget implements \Widget\ActionInterface
             /** 向访客发信 */
             if ($this->_comment->status == 'approved' && in_array('to_guest', $this->_cfg->other)) {
                 /**  如果联系我的邮件地址为空，则使用文章作者的邮件地址 */
-                if (!$this->_comment->contactme) {
+                if (!$this->_cfg->contactme) {
                     if (!isset($user) || !$user) {
-                        self::widget('\Widget\Users\Author@temp' . $this->_comment->cid, array('uid' => $this->_email->ownerId))->to($user);
+                        self::widget('\Widget\Users\Author@temp' . $this->_comment->cid, array('uid' => $this->_comment->ownerId))->to($user);
                     }
                     $this->_comment->contactme = $user->mail;
                 } else {
                     $this->_comment->contactme = $this->_cfg->contactme;
                 }
+
                 $original = $this->_db->fetchRow($this->_db->select('author', 'mail', 'text')
                     ->from('table.comments')
                     ->where('coid = ?', $this->_comment->parent));
-                if (in_array('to_me', $this->_cfg->other) || $this->_email->mail != $original['mail']) {
+                if (in_array('to_me', $this->_cfg->other) || $this->_comment->mail != $original['mail']) {
                     $this->_comment->to             = $original['mail'];
                     $this->_comment->originalText   = $original['text'];
                     $this->_comment->originalAuthor = $original['author'];
@@ -263,7 +264,7 @@ class Action extends Widget implements \Widget\ActionInterface
         $this->_email->toName = $this->_comment->author;
         $this->_email->to = $this->_comment->mail; //评论者的邮箱
 
-        $date = new \Typecho\Date($this->_email->created);
+        $date = new \Typecho\Date($this->_comment->created);
         $status = [
             "approved" => '通过',
             "waiting"  => '待审',
@@ -288,7 +289,7 @@ class Action extends Widget implements \Widget\ActionInterface
             $this->_comment->ip,
             $this->_comment->mail,
             $this->_comment->permalink,
-            $this->_comment->manage,
+            $this->_options->siteUrl . __TYPECHO_ADMIN_DIR__ . "manage-comments.php",
             $this->_comment->text,
             $date->format('Y-m-d H:i:s'),
             $status[$this->_comment->status]
@@ -306,19 +307,20 @@ class Action extends Widget implements \Widget\ActionInterface
      */
     public function guestMail()
     {
-        $this->_email->toName = $this->_comment->author ? $this->_comment->author : $this->_options->title;
-        $date    = new \Typecho\Date($this->_email->created);
+        $this->_email->to  = $this->_comment->mail;
+        $this->_email->toName = $this->_comment->originalAuthor ? $this->_comment->originalAuthor : $this->_options->title;
+        $date    = new \Typecho\Date($this->_comment->created);
 
         $search  = [
             '{siteTitle}',
-            '{title}',
-            '{author_p}',
-            '{author}',
-            '{permalink}',
-            '{text}',
-            '{text_p}',
-            '{contactme}',
-            '{time}'
+            '{{title}}',
+            '{{author_p}}',
+            '{{author}}',
+            '{{permalink}}',
+            '{{text}}',
+            '{{text_p}}',
+            '{{contactme}}',
+            '{{time}}'
         ];
         $replace = [
             $this->_options->title,
@@ -409,7 +411,7 @@ class Action extends Widget implements \Widget\ActionInterface
             throw new \Typecho\Widget\Exception('模板文件' . $template . '不存在', 404);
         }
 
-        return file_get_contents($this->_dir . '/' . $template);
+        return file_get_contents($filename);
     }
 
     /**

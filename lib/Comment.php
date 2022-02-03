@@ -114,7 +114,14 @@ class Comment
 	public string $originalAuthor;
 
 	/**
-	 * 联系邮箱
+	 * 对于访客时 访客的邮件地址
+	 *
+	 * @var string
+	 */
+	public string $originalMail;
+
+	/**
+	 * 模版中联系我的邮箱
 	 *
 	 * @var string
 	 */
