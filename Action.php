@@ -192,7 +192,7 @@ class Action extends Widget implements \Widget\ActionInterface
         //向博主发信
         // TODO $this->_comment->parent === '0' // parent === ‘0’ 时 为根评论
         // 如果在此处判断 会导致 别人评论别人的评论时 不会发送邮件给博主 后续fix
-        if (in_array($this->_comment->status, $this->_cfg->status) && in_array('to_owner', $this->_cfg->other) && ($toMe || $this->_comment->ownerId != $this->_comment->authorId)) {
+        if (in_array($this->_comment->status, $this->_cfg->status) && $this->_comment->type !== '1' && in_array('to_owner', $this->_cfg->other) && ($toMe || $this->_comment->ownerId != $this->_comment->authorId)) {
             if (!$this->_cfg->mail) {
                 self::widget('\Widget\Users\Author@temp' . $this->_comment->cid, ['uid' => $this->_comment->ownerId])->to($user);
                 $this->_email->reciver = $user->mail;

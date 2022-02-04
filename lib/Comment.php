@@ -54,6 +54,11 @@ class Comment
 	 */
 	public int $authorId;
 
+	/**
+	 * 不知道什么玩意儿
+	 *
+	 * @var integer
+	 */
 	public int $ownerId;
 
 	/**
@@ -97,6 +102,12 @@ class Comment
 	 * @var string
 	 */
 	public string $status;
+
+	/**
+	 * 被评论者
+	 *
+	 * @var string
+	 */
 	public string $parent;
 
 	/**
@@ -126,4 +137,11 @@ class Comment
 	 * @var string
 	 */
 	public string $contactme;
+
+	/**
+	 * 评论类型 1 > 仅向访客发送邮件 2 > 向博主和访客发送邮件
+	 *
+	 * @var string
+	 */
+	public string $type;
 }

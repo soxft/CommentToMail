@@ -292,6 +292,7 @@ class Plugin implements PluginInterface
 		$commentClass->permalink = $comment->permalink;
 		$commentClass->status = $comment->status;
 		$commentClass->parent = $comment->parent;
+		$commentClass->type = $comment->type ?? '2';
 
 		// 添加至队列
 		$db = Db::get();
@@ -304,16 +305,17 @@ class Plugin implements PluginInterface
 	}
 
 	/**
-	 * 通过邮件
+	 * 通过邮件 博主 通过邮件后 回调函数
 	 *
 	 * @param $comment,$edit,$status 调用参数
 	 * @return void
 	 */
 	public static function passComment($comment, $edit, $status)
 	{
-		if ('approved' == $status) {
-			$edit->status = 'approved';
-			self::parseComment($edit);
-		}
+		// 邮件 状态未通过时 > 访客不会收到通知, 只有访客被评论 的评论状态 为 approved时 才会 notify
+		if ($status !== 'approved') return;
+		$edit->status = 'approved';
+		$edit->type = '1'; //标记 approved后的邮件 仅发送给访客 避免重复发送给博主
+		self::parseComment($edit);
 	}
 }
