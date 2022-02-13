@@ -12,9 +12,9 @@ use \Typecho\Widget\Helper\Form\Element\{Password, Text, Radio, Checkbox};
  *
  * @package CommentToMail
  * @author  xcsoft
- * @version 1.2.1
+ * @version 1.2.4
  * @link https://xsot.cn
- * @LastEditDate 20220130
+ * @LastEditDate 20220213
  */
 
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
