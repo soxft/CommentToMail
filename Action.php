@@ -256,7 +256,7 @@ class Action extends Widget implements \Widget\ActionInterface
             "spam"     => '垃圾'
         ];
         $search  = array(
-            '{{siteTitle}',
+            '{{siteTitle}}',
             '{{title}}',
             '{{author}}',
             '{{ip}}',
@@ -294,7 +294,7 @@ class Action extends Widget implements \Widget\ActionInterface
     {
         $date = new \Typecho\Date($this->_comment->created);
         $search = [
-            '{siteTitle}',
+            '{{siteTitle}}',
             '{{title}}',
             '{{author_p}}',
             '{{author}}',
