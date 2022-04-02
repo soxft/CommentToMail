@@ -427,19 +427,9 @@ class Action extends Widget implements \Widget\ActionInterface
         /** 转向原页 */
         $this->response->goBack();
     }
-    public function mailLog($type = true, $content = null)
+    public function mailLog($content = null)
     {
-        if (!$this->_isMailLog) {
-            return false;
-        }
-
         $fileName = $this->_dir . '/log/mailer_log.txt';
-        if ($type) {
-            $guest = explode('@', $this->_email->to);
-            $guest = substr($this->_email->to, 0, 1) . '***' . $guest[1];
-            $content  = $content ? $content : "向 " . $guest . " 发送邮件成功！\r\n";
-        }
-
         file_put_contents($fileName, $content, FILE_APPEND);
     }
 
