@@ -240,7 +240,7 @@ class Plugin implements PluginInterface
 	public static function dbInstall()
 	{
 		$installDb = Db::get();
-		$type = array_pop(explode('_', $installDb->getAdapterName())); //数据库类型 mysql/sqlite
+		$type = array_pop(explode('_', $installDb->getAdapterName())); //数据库类型 mysql/sqlite/postgres
 		$prefix = $installDb->getPrefix(); //表前缀
 
 		$scripts = file_get_contents(__DIR__ . '/sql/' . $type . '.sql');
