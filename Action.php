@@ -427,11 +427,6 @@ class Action extends Widget implements \Widget\ActionInterface
         /** 转向原页 */
         $this->response->goBack();
     }
-    public function mailLog($content = null)
-    {
-        $fileName = $this->_dir . '/log/mailer_log.txt';
-        file_put_contents($fileName, $content, FILE_APPEND);
-    }
 
     /**
      * 编辑模板文件
