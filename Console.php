@@ -46,7 +46,7 @@ class Console extends Widget
     public function execute()
     {
         $this->widget('Widget_User')->pass('administrator');
-        $files = glob($this->_template_dir . '*.{html,HTML}', GLOB_BRACE);
+        $files = glob($this->_template_dir . '*.html');
         $this->_currentFile = $this->request->get('file', 'owner.html');
 
         if (preg_match("/^([_0-9a-z-\.\ ])+$/i", $this->_currentFile) && file_exists($this->_template_dir . $this->_currentFile)) {
