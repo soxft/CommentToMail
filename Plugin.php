@@ -20,7 +20,6 @@ use \Typecho\Widget\Helper\Form\Element\{Password, Text, Radio, Checkbox};
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
 require_once 'Log.php';
-require_once 'SyncMail.php';
 
 /**
  * Plugin
@@ -298,19 +297,24 @@ class Plugin implements PluginInterface
 		$commentClass->parent = $comment->parent;
 		$commentClass->type = $comment->type ?? '2';
 
+		// 添加至队列
+		$db = Db::get();
+		$db->query(
+			$db->insert($db->getPrefix() . 'mail')->rows([
+				'content' => base64_encode(serialize((object)$commentClass)),
+				'sent' => '0'
+			])
+		);
+
 		// 如果同步就直接发邮件，否则添加至队列
+		$keySync = Helper::options()->plugin('CommentToMail')->key;		
+		$optionsSync = Widget::widget('Widget_Options');
+		$entryUrlSync = ($optionsSync->rewrite) ? $optionsSync->siteUrl : $optionsSync->siteUrl . 'index.php'; // 博客网址
+		$deliverUrlSync = rtrim($entryUrlSync, '/') . '/action/' . self::$_action . '?do=deliverMail&key=' . $keySync;;
+		
 		$isSync = Helper::options()->plugin('CommentToMail')->other;
 		if (in_array('isSync', $isSync)){
-			deliverMailSync($commentClass);
-		}else{
-			// 添加至队列
-			$db = Db::get();
-			$db->query(
-				$db->insert($db->getPrefix() . 'mail')->rows([
-					'content' => base64_encode(serialize((object)$commentClass)),
-					'sent' => '0'
-				])
-			);
+			file_get_contents($deliverUrlSync);
 		}
 	}
 	
