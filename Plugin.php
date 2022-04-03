@@ -19,6 +19,9 @@ use \Typecho\Widget\Helper\Form\Element\{Password, Text, Radio, Checkbox};
 
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
+require_once 'Log.php';
+require_once 'SyncMail.php';
+
 /**
  * Plugin
  * 
@@ -203,6 +206,7 @@ class Plugin implements PluginInterface
 				'to_owner' => '有评论及回复时, 发邮件通知博主.',
 				'to_guest' => '评论被回复时, 发邮件通知评论者.',
 				'to_me' => '自己回复自己的评论时, 发邮件通知. (同时针对博主和访客)',
+				'isSync' => '同步发送邮件，否则需要手动（或者用定时任务自动）执行发送任务',
 			],
 			['to_owner', 'to_guest'],
 			'其他设置',
@@ -294,16 +298,22 @@ class Plugin implements PluginInterface
 		$commentClass->parent = $comment->parent;
 		$commentClass->type = $comment->type ?? '2';
 
-		// 添加至队列
-		$db = Db::get();
-		$db->query(
-			$db->insert($db->getPrefix() . 'mail')->rows([
-				'content' => base64_encode(serialize((object)$commentClass)),
-				'sent' => '0'
-			])
-		);
+		// 如果同步就直接发邮件，否则添加至队列
+		$isSync = Helper::options()->plugin('CommentToMail')->other;
+		if (in_array('isSync', $isSync)){
+			deliverMailSync($commentClass);
+		}else{
+			// 添加至队列
+			$db = Db::get();
+			$db->query(
+				$db->insert($db->getPrefix() . 'mail')->rows([
+					'content' => base64_encode(serialize((object)$commentClass)),
+					'sent' => '0'
+				])
+			);
+		}
 	}
-
+	
 	/**
 	 * 通过邮件 博主 通过邮件后 回调函数
 	 *
@@ -316,6 +326,7 @@ class Plugin implements PluginInterface
 		if ($status !== 'approved') return;
 		$edit->status = 'approved';
 		$edit->type = '1'; //标记 approved后的邮件 仅发送给访客 避免重复发送给博主
+		
 		self::parseComment($edit);
 	}
 }
