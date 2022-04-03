@@ -8,7 +8,7 @@
 
 function get_log($log_msg)
 {
-    $log_filename = __DIR__ . "/logs";
+    $log_filename = __DIR__ . "/log";
     if (!file_exists($log_filename)) 
     {
         // create directory/folder uploads.
