@@ -12,7 +12,7 @@ use \Typecho\Widget\Helper\Form\Element\{Password, Text, Radio, Checkbox};
  *
  * @package CommentToMail
  * @author  xcsoft
- * @version 1.2.4
+ * @version 1.2.8
  * @link https://xsot.cn
  * @LastEditDate 20220213
  */
