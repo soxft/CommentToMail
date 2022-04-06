@@ -2,7 +2,7 @@
 
 > 一个Typecho异步邮件推送插件
 
-适用版本: Typecho 1.2.0 beta / php 8.0 +
+适用版本: Typecho 1.2.0 / php 8.0 +
 
 ## 安装参考
 
