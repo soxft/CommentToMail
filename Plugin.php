@@ -12,9 +12,9 @@ use \Typecho\Widget\Helper\Form\Element\{Password, Text, Radio, Checkbox};
  *
  * @package CommentToMail
  * @author  xcsoft
- * @version 1.2.8
+ * @version 1.2.9
  * @link https://xsot.cn
- * @LastEditDate 20220213
+ * @LastEditDate 20240722
  */
 
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
@@ -243,10 +243,18 @@ class Plugin implements PluginInterface
 	public static function dbInstall()
 	{
 		$installDb = Db::get();
-		$type = array_pop(explode('_', $installDb->getAdapterName())); //数据库类型 mysql/sqlite/postgres
+
+        $adapter = explode('_', $installDb->getAdapterName());
+		$adapter_typ = array_pop($adapter); //数据库类型 mysql/sqlite/postgres
+        if ($adapter_typ == "Mysqli") $type = "Mysql";
+        $supported_adapter = ["Mysql", "Pgsql", "SQLite"];
+        if (!in_array($adapter_typ, $supported_adapter)) {
+            throw new \Typecho\Plugin\Exception('数据表建立失败, 不支持的数据库驱动, (仅支持 Mysql, SQLite, PgSQL)');
+        }
+
 		$prefix = $installDb->getPrefix(); //表前缀
 
-		$scripts = file_get_contents(__DIR__ . '/sql/' . $type . '.sql');
+		$scripts = file_get_contents(__DIR__ . '/sql/' . $adapter_typ . '.sql');
 		$scripts = str_replace('typecho_', $prefix, $scripts);
 		$scripts = str_replace('%charset%', 'utf8', $scripts);
 		$scripts = explode(';', $scripts);
